@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-md-center">
+    <div class="col-md-auto">
+        <table class="table col-md-auto">
+            <thead class="thead-dark">
+            <tr>
+                <th scope="col">id</th>
+                <th scope="col">name</th>
+                <th scope="col">status</th>
+                <th scope="col">createdAt</th>
+                <th scope="col">updatedAt</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for cube in cubes %}
+            <tr class="{{ tr_status}}">
+                <th scope="row">{{ cube.id }}</th>
+                <td>{{ cube.name }}</td>
+                <td>{{ cube.status }}</td>
+                <td>{{ cube.createdAt }}</td>
+                <td>{{ cube.updatedAt }}</td>
+            <tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
