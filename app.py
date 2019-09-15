@@ -35,6 +35,14 @@ def init_db():
     """
     db.create_all()
 
+@app.cli.command('drop_db')
+def init_db():
+    """
+    With {flask init_db} to init the metadata schema
+    :return:
+    """
+    db.drop_all()
+
 @app.errorhandler(ServiceError)
 def handle_invalid_usage(error):
     response = jsonify(error.to_dict())

@@ -34,7 +34,7 @@ def row_to_dict(obj):
 
 
 class CreateUpdateMixin(object):
-    def init(self):
+    def save(self):
         self.createdAt = datetime.now()
         self.updatedAt = datetime.now()
         db.session.add(self)
@@ -45,4 +45,4 @@ class CreateUpdateMixin(object):
         for attr in self.__mapper__.columns.keys():
             if attr in values:
                 setattr(self, attr, values[attr])
-        db.session.commit()
+        self.updatedAt = datetime.now()

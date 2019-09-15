@@ -1,4 +1,4 @@
-SQLALCHEMY_DATABASE_URI = "mysql://ticube:password@localhost:3306/TiCube"
+SQLALCHEMY_DATABASE_URI = "mysql://root:gongmeng@localhost:3306/TiCube"
 
 dbconfig = {
     "user": "ticube",
