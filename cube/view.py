@@ -64,21 +64,19 @@ def measure_list():
     return jsonify(service.list_measures(cube_id))
 
 
-@bp.route('/dimension/add', methods=['POST'])
+@bp.route('/dimension/save', methods=['POST'])
 def dimension_add():
     """
     REF:
     :return:
     """
-    cube_id = request.json['id']
-    return jsonify(service.list_dimentions(cube_id))
+    return jsonify(service.save_dimension(request.json['id'], request.json['data']))
 
 
-@bp.route('/measure/add', methods=['POST'])
+@bp.route('/measure/save', methods=['POST'])
 def measure_add():
     """
     REF:
     :return:
     """
-    cube_id = request.json['id']
-    return jsonify(service.list_dimentions(cube_id))
+    return jsonify(service.save_measure(request.json['id'], request.json['data']))

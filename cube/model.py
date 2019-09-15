@@ -53,7 +53,7 @@ class Dimension(CreateUpdateMixin, db.Model):
     col = db.Column(db.String(255), nullable=False, comment="table column name, cube table for foreign table")
     colType = db.Column(db.String(255), nullable=False, comment="dimension column type")
     func = db.Column(db.String(255), nullable=True, comment="function on dimension column")
-    groupId = db.Column(db.Integer, nullable=True, comment="comment columns own same group id")
+    groupId = db.Column(db.BigInteger, nullable=True, comment="comment columns own same group id")
     parentId = db.Column(db.Integer, nullable=True, comment="subset point to parent set")
     desc = db.Column(db.String(255), nullable=True)
     createdAt = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=True)

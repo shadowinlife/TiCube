@@ -35,6 +35,10 @@ def row_to_dict(obj):
 
 class CreateUpdateMixin(object):
     def save(self):
+        """
+        add createdAt and updatedAt to the row by default
+        :return:
+        """
         self.createdAt = datetime.now()
         self.updatedAt = datetime.now()
         db.session.add(self)
@@ -42,7 +46,13 @@ class CreateUpdateMixin(object):
         return self
 
     def update(self, values):
+        """
+        change updatedAt by default
+        :param values:
+        :return:
+        """
         for attr in self.__mapper__.columns.keys():
             if attr in values:
                 setattr(self, attr, values[attr])
         self.updatedAt = datetime.now()
+        return self

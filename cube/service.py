@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy import text
 from cube.model import Cube, CubeStatus, Dimension, Measure, MeasureAction
 from utils.orm import row_to_dict, db
@@ -171,3 +173,66 @@ def list_measures(cube_id):
     # for ready cube, just return the list
     rs = Measure.query.filter_by(cubeId=cube_id).all()
     return [row_to_dict(row) for row in rs]
+
+
+def save_measure(cube_id, measure_list):
+    """
+    save user define measures
+    - delete old config
+    - save new config
+    :param cube_id: cube id
+    :param measure_list:
+    :return:
+    """
+    Measure.query.filter_by(cubeId=cube_id).delete()
+    for item in measure_list:
+        db.session.add(
+            Measure(action=item['action'], cubeId=cube_id, col=item['col'], colType=item['colType'], desc=item['desc']))
+    db.session.commit()
+    return True
+
+
+def save_dimension(cube_id, measure_list):
+    """
+    save user define measures
+    - delete old config
+    - save new config
+    :param cube_id: cube id
+    :param measure_list:
+    :return:
+    """
+    Dimension.query.filter_by(cubeId=cube_id).delete()
+    for item in measure_list:
+        db.session.add(
+            Dimension(cubeId=cube_id, table=item['table'], col=item['col'], colType=item['colType'], func=item['func'],
+                      desc=item['desc']))
+    db.session.commit()
+    return True
+
+
+def save_dimension_struct(cube_id, dimension_struct):
+    """
+    persist the dimention relation in the database
+    - group means that all the column in the group own one-to-one mapping
+    - hierarchy means that column own subset-parent relation mapping
+
+    :param cube_id:
+    :param dimension_struct:
+    :return:
+    """
+
+    # for group struct, mark all the column with unique group id
+    if 'group' in dimension_struct:
+        # iterator all the group
+        for item_list in dimension_struct['group']:
+            # init an unique group id for all the col in this group
+            group_id = uuid.uuid1().int
+            for dim_id in item_list:
+                Dimension.query.get(dim_id).update(dict(groupId=group_id))
+
+    # for hierarchy structure, document the parent relation at at database
+    if 'hierarchy' in dimension_struct:
+        for item_tuple in dimension_struct:
+            Dimension.query.get(item_tuple[0]).update(dict(parentId=item_tuple[1]))
+
+    db.session.commit()
