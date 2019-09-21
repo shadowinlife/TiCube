@@ -56,3 +56,4 @@ class CreateUpdateMixin(object):
                 setattr(self, attr, values[attr])
         self.updatedAt = datetime.now()
         return self
+

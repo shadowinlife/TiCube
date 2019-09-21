@@ -5,6 +5,7 @@ from cube.model import Cube, CubeStatus, Dimension, Measure, MeasureAction
 from utils.orm import row_to_dict, db
 from utils.logger import logger as LOG
 
+# used to query foreign key
 _FK_SQL = '''
 SELECT
     CONCAT(REFERENCED_TABLE_SCHEMA, '.', REFERENCED_TABLE_NAME) AS fk_table,
@@ -16,10 +17,12 @@ WHERE
     REFERENCED_TABLE_NAME IS NOT NULL AND TABLE_SCHEMA='{0}' AND TABLE_NAME='{1}'
 '''
 
+# used to query unique key
 _SHOW_UNIQUE = '''
 SHOW INDEXES FROM {} WHERE non_unique=0
 '''
 
+# used to query table schema
 _DESC_SQL = '''
 DESC {0}
 '''
@@ -168,7 +171,7 @@ def list_measures(cube_id):
     cube = Cube.query.get(cube_id)
     if cube.status == CubeStatus.EMPTY:
         _analyse_table(cube.id)
-        cube.update(status=CubeStatus.READY)
+        cube.update(dict(status=CubeStatus.READY))
         db.session.commit()
     # for ready cube, just return the list
     rs = Measure.query.filter_by(cubeId=cube_id).all()
@@ -187,12 +190,12 @@ def save_measure(cube_id, measure_list):
     Measure.query.filter_by(cubeId=cube_id).delete()
     for item in measure_list:
         db.session.add(
-            Measure(action=item['action'], cubeId=cube_id, col=item['col'], colType=item['colType'], desc=item['desc']))
+            Measure(action=item['action'], cubeId=cube_id, col=item['col'], desc=item['desc']))
     db.session.commit()
     return True
 
 
-def save_dimension(cube_id, measure_list):
+def save_dimension(cube_id, dimension_list):
     """
     save user define measures
     - delete old config
@@ -202,15 +205,15 @@ def save_dimension(cube_id, measure_list):
     :return:
     """
     Dimension.query.filter_by(cubeId=cube_id).delete()
-    for item in measure_list:
+    for item in dimension_list:
         db.session.add(
-            Dimension(cubeId=cube_id, table=item['table'], col=item['col'], colType=item['colType'], func=item['func'],
+            Dimension(cubeId=cube_id, table=item['table'], col=item['col'], func=item['func'],
                       desc=item['desc']))
     db.session.commit()
     return True
 
 
-def save_dimension_struct(cube_id, dimension_struct):
+def save_dimension_struct(dimension_struct):
     """
     persist the dimention relation in the database
     - group means that all the column in the group own one-to-one mapping
@@ -234,5 +237,5 @@ def save_dimension_struct(cube_id, dimension_struct):
     if 'hierarchy' in dimension_struct:
         for item_tuple in dimension_struct:
             Dimension.query.get(item_tuple[0]).update(dict(parentId=item_tuple[1]))
-
     db.session.commit()
+    return True
