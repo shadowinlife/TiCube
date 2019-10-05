@@ -229,13 +229,13 @@ def save_dimension_struct(dimension_struct):
         # iterator all the group
         for item_list in dimension_struct['group']:
             # init an unique group id for all the col in this group
-            group_id = uuid.uuid1().int
+            group_id = uuid.uuid1().hex
             for dim_id in item_list:
                 Dimension.query.get(dim_id).update(dict(groupId=group_id))
 
     # for hierarchy structure, document the parent relation at at database
     if 'hierarchy' in dimension_struct:
-        for item_tuple in dimension_struct:
+        for item_tuple in dimension_struct['hierarchy']:
             Dimension.query.get(item_tuple[0]).update(dict(parentId=item_tuple[1]))
     db.session.commit()
     return True

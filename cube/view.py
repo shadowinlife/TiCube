@@ -73,6 +73,15 @@ def dimension_add():
     return jsonify(service.save_dimension(request.json['id'], request.json['data']))
 
 
+@bp.route('/dimension/struct', methods=['POST'])
+def dimension_struct():
+    """
+    REF:
+    :return:
+    """
+    return jsonify(service.save_dimension_struct(request.json['data']))
+
+
 @bp.route('/measure/save', methods=['POST'])
 def measure_add():
     """
