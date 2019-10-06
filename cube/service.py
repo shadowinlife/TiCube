@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy import text
 from cube.model import Cube, CubeStatus, Dimension, Measure, MeasureAction
+from engine.plan import CubeBuildPlan
 from utils.orm import row_to_dict, db
 from utils.logger import logger as LOG
 
@@ -213,7 +214,7 @@ def save_dimension(cube_id, dimension_list):
     return True
 
 
-def save_dimension_struct(dimension_struct):
+def save_dimension_struct(cube_id, dimension_struct):
     """
     persist the dimention relation in the database
     - group means that all the column in the group own one-to-one mapping
@@ -223,6 +224,8 @@ def save_dimension_struct(dimension_struct):
     :param dimension_struct:
     :return:
     """
+    # clear all the old config
+    Dimension.query.filter_by(cubeId=cube_id).update(dict(groupId=None, parentId=None))
 
     # for group struct, mark all the column with unique group id
     if 'group' in dimension_struct:
@@ -239,3 +242,8 @@ def save_dimension_struct(dimension_struct):
             Dimension.query.get(item_tuple[0]).update(dict(parentId=item_tuple[1]))
     db.session.commit()
     return True
+
+
+def build_cube(cube_id):
+    cube_build_plan = CubeBuildPlan(cube_id).get_plan()
+    return None

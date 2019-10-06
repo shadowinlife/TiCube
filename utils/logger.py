@@ -15,7 +15,6 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 # file log
-logger.setLevel(logging.INFO)
 fileHandler = TimedRotatingFileHandler(os.path.dirname(os.path.abspath(__file__)) + '/server.log', when="D",
                                        interval=5, backupCount=100, encoding="utf-8")
 fileHandler.setFormatter(formatter)

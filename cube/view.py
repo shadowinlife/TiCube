@@ -79,7 +79,7 @@ def dimension_struct():
     REF:
     :return:
     """
-    return jsonify(service.save_dimension_struct(request.json['data']))
+    return jsonify(service.save_dimension_struct(request.json['id'], request.json['data']))
 
 
 @bp.route('/measure/save', methods=['POST'])
@@ -89,3 +89,11 @@ def measure_add():
     :return:
     """
     return jsonify(service.save_measure(request.json['id'], request.json['data']))
+
+@bp.route('/build', methods=['POST'])
+def cube_build():
+    """
+    REF:
+    :return:
+    """
+    return jsonify(service.build_cube(request.json['id']))
