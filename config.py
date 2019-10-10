@@ -4,3 +4,5 @@ dbconfig = {
     "user": "ticube",
     "password": "password"
 }
+
+CELERY_BROKER = 'redis://localhost:6379/0'
