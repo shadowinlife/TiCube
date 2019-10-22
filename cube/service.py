@@ -2,7 +2,7 @@ import uuid
 
 from sqlalchemy import text
 from cube.model import Cube, CubeStatus, Dimension, Measure, MeasureAction
-from engine.plan import CubeBuildPlan
+from engine.cube_build_plan import CubeBuildPlan
 from utils.orm import row_to_dict, db
 from utils.logger import logger as LOG
 
