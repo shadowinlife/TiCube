@@ -7,7 +7,7 @@ logger.setLevel(logging.DEBUG)
 
 # log structure
 formatter = logging.Formatter(
-    "%[(asctime)s levelname:%(levelname)s %(filename)s %(funcName)s %(lineno)d]: %(message)s]")
+    "%(asctime)s levelname:%(levelname)s %(filename)s %(funcName)s %(lineno)d]: %(message)s")
 
 # console log
 handler = logging.StreamHandler()

@@ -51,7 +51,7 @@ def dimension_list():
     :return:
     """
     cube_id = request.json['id']
-    return jsonify(service.list_dimentions(cube_id))
+    return jsonify(service.list_dimensions(cube_id))
 
 
 @bp.route('/measure/list', methods=['POST'])

@@ -28,6 +28,7 @@ class Cube(CreateUpdateMixin, db.Model):
     name = db.Column(db.String(100), nullable=False, comment="cube name")
     status = db.Column(db.Enum(CubeStatus), nullable=False)
     table = db.Column(db.String(255), nullable=False)
+    sql = db.Column(db.Text, nullable=True)
     desc = db.Column(db.String(255), nullable=True)
     createdAt = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False)
     updatedAt = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False)

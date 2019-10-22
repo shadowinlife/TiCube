@@ -51,7 +51,7 @@ def _analyse_table(cube_id):
     # search all the foreign key in this table, only trace one level
     rs = db.engine.execute(text(_FK_SQL.format(table_db, table_name)))
 
-    # parser fk col
+    # parser foreign key column
     for row in rs:
         fk_col.append(row['col'])
         # generator fk_table->[col1, col2, col3]
@@ -69,7 +69,6 @@ def _analyse_table(cube_id):
         if not (all(x in unique_col_list for x in fk_dim[fk_table_name])):
             LOG.info("{}:{} not fit fk", fk_table_name, fk_dim[fk_table_name])
             continue
-
         # all the
         rs = db.engine.execute(text(_DESC_SQL.format(fk_table_name)))
         for row in rs:
@@ -140,7 +139,7 @@ def save_cube(name, table, desc):
     return cube.id
 
 
-def list_dimentions(cube_id):
+def list_dimensions(cube_id):
     """
     Fetch cube dimestion config
     - Suggest dimension for empty cube
