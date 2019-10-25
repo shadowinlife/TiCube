@@ -2,7 +2,7 @@ import uuid
 
 from sqlalchemy import text
 from cube.model import Cube, CubeStatus, Dimension, Measure, MeasureAction
-from engine.cube_build_plan import CubeBuildPlan
+from engine.cube_execute import CubeExecute
 from utils.orm import row_to_dict, db
 from utils.logger import logger as LOG
 
@@ -80,9 +80,11 @@ def _analyse_table(cube_id):
         if row[0] in fk_col:
             # skip all the reference column
             continue
-        elif 'int' in row[1] or 'float' in row[1] or 'decimal' in row[1] or 'double' in row[1]:
+        elif 'int' in row[1]:
             # numeric col is used as measure, default action is summary
-            db.session.add(Measure(action=MeasureAction.SUM, cubeId=cube_id, col=row[0], colType=row[1]))
+            db.session.add(Measure(action=MeasureAction.SUM, cubeId=cube_id, col=row[0], colType='BIGINT'))
+        elif 'float' in row[1] or 'decimal' in row[1] or 'double' in row[1]:
+            db.session.add(Measure(action=MeasureAction.SUM, cubeId=cube_id, col=row[0], colType='FLOAT'))
         elif 'date' in row[1] or 'timestamp' in row[1]:
             # date filed can be extend to day->month->year
             db.session.add(Dimension(table=cube.table, cubeId=cube_id, col=row[0], colType=row[1], func="DATE"))
@@ -93,7 +95,7 @@ def _analyse_table(cube_id):
             db.session.add(Dimension(table=cube.table, cubeId=cube_id, col=row[0], colType=row[1]))
 
     # add default row count to the measure
-    db.session.add(Measure(action=MeasureAction.COUNT, cubeId=cube_id, col='1', colType='DEFAULT'))
+    db.session.add(Measure(action=MeasureAction.COUNT, cubeId=cube_id, col='1', colType='BIGINT'))
     return
 
 
@@ -244,5 +246,6 @@ def save_dimension_struct(cube_id, dimension_struct):
 
 
 def build_cube(cube_id):
-    cube_build_plan = CubeBuildPlan(cube_id).get_plan()
+    cube_execute = CubeExecute(cube_id)
+    cube_execute.create_cube_schema()
     return None

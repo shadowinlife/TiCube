@@ -1,8 +1,9 @@
 from sqlalchemy import text
 
-from engine.cube_object import PlanNode, PlanNodeUtils
+from engine.cube_plan_model import PlanNode
 from utils.orm import db
 from utils.logger import logger as LOG
+
 
 class CubeBuildPlan:
     def __init__(self, cube_id):
@@ -13,11 +14,6 @@ class CubeBuildPlan:
         self._cube_id = cube_id
         self._group_relation_dict = {}
         self._cube_hash_buffer = []
-
-        self._measure_cache = []
-        self._dimension_cache = {}
-
-        self.plan_node_utils = PlanNodeUtils(cube_id)
 
     def _level_build(self, root_node):
         """
@@ -84,31 +80,17 @@ class CubeBuildPlan:
         # build the origin plan
         self._build_plan = self._level_build(root_node=root_node)
 
-    def _plan_to_sql(self, plan_node):
-        # build the sql
-        # this is the root node
-        measure_sql = ', '.join(self._get_measure(plan_node))
-        LOG.info("CubeId: %s, Measure SQL:%s", self._cube_id, measure_sql)
-
-        dimension_sql = ','.join(self._get_dimension(plan_node))
-        LOG.info("CubeId: %s, Dimension SQL:%s", self._cube_id, dimension_sql)
-
-        table_sql = self._get_table(plan_node)
-        LOG.info("CubeId: %s, Table SQL:%s", self._cube_id, table_sql)
-
-        plan_sql = 'SELECT {0}, {1} FROM {2} GROUP BY {3}'.format(dimension_sql, measure_sql, table_sql, ','.join(
-            str(i) for i in range(1, plan_node.get_dim_length() + 1)))
-        LOG.info("CubeId: %s, Plan SQL:%s", self._cube_id, plan_sql)
-
-        plan_node.set_sql(plan_sql)
-
-        # iterator all the child level sql
-        for child_node in plan_node.child_list():
-            self._plan_to_sql(child_node)
-
-    def get_plan(self):
+    def get_basic_plan(self):
         # make the plan
         self._fast_cube()
-        # generate sql from the plan node
-        self._plan_to_sql(self._build_plan)
+        return self._build_plan
+
+    def get_group_plan(self):
+        # make the plan
+        self._fast_cube()
+        return self._build_plan
+
+    def get_hierarchy_plan(self):
+        # make the plan
+        self._fast_cube()
         return self._build_plan
