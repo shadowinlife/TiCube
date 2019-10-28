@@ -26,8 +26,6 @@ class CubeUtils:
         self._build_meausre_name()
         self._build_dimension_name()
 
-
-
     def _build_meausre_name(self):
         """
         build the measure column name and relate sql
@@ -62,14 +60,14 @@ class CubeUtils:
             self._dimension_cache[row['id']] = [dimension_name, dimension_sql]
             self._dimension_col[dimension_name] = row['colType']
 
-    def get_measure(self, plan_node):
+    def get_measure(self, plan_node, only_name=False):
         """
         Get the Metric SQL
         :return:
         """
 
         # for root plan node , the measure is build from origin table
-        if plan_node.get_parent_node() is None:
+        if plan_node.get_parent_node() is None and only_name is False:
             for measure_sql in self._measure_cache.values():
                 yield measure_sql
 
@@ -78,7 +76,7 @@ class CubeUtils:
             for measure_name in self._measure_cache.keys():
                 yield measure_name
 
-    def get_dimension(self, plan_node):
+    def get_dimension(self, plan_node, only_name=False):
 
         """
         Get the Dimension SQL
@@ -86,7 +84,7 @@ class CubeUtils:
         """
 
         # for root plan node, it need to build all the dimensions from origin table
-        if plan_node.get_parent_node() is None:
+        if plan_node.get_parent_node() is None and only_name is False:
             for dim_id in plan_node.get_dim():
                 yield self._dimension_cache[dim_id][1]
 
@@ -95,14 +93,14 @@ class CubeUtils:
             for dim_id in plan_node.get_dim():
                 yield self._dimension_cache[dim_id][0]
 
-    def build_fact_table(self, plan_node):
+    def get_table(self, plan_node):
         """
         build the sql that join the pivot table and dimension table
         :param plan_node:
         :return:
         """
         if plan_node.get_parent_node() is None:
-            table_name = None
+            table_name = self.table_name
             fk_list = []
 
             # find all the dimension table name
@@ -112,7 +110,7 @@ class CubeUtils:
                 fk_list.append(row['table'])
 
             # find out the foreign key between pivot table and dimension
-            FK_TABLE_SQL = '''
+            _FK_TABLE_SQL = '''
                        SELECT
                            REFERENCED_COLUMN_NAME AS fk_col,
                            COLUMN_NAME AS col,
@@ -124,9 +122,9 @@ class CubeUtils:
                            REFERENCED_TABLE_NAME IN ({3}) ORDER BY information_schema.key_column_usage.REFERENCED_TABLE_NAME
                '''.format(table_name, table_name.split('.')[0], table_name.split('.')[1],
                           ','.join(["'%s'" % fk.split('.')[1] for fk in fk_list]))
-            LOG.info("CubeId: %s, FK SQL:%s", self._cube_id, FK_TABLE_SQL)
+            LOG.info("CubeId: %s, FK SQL:%s", self._cube_id, _FK_TABLE_SQL)
 
-            _rs = db.engine.execute(text(FK_TABLE_SQL))
+            _rs = db.engine.execute(text(_FK_TABLE_SQL))
 
             # join the pivot and dimension to generate wide table
             current_fk = None
@@ -141,6 +139,18 @@ class CubeUtils:
                                                                     row['fk_col'])
 
             return table_name + plan_table_sql
+        else:
+            # the input should be the output of parent table
+            # TODO:  can use spark temp table to cache parent table and avoid this step
+            parent_dim = self.get_dimension(plan_node=plan_node.get_parent_node(), only_name=True)
+            parent_mes = self.get_measure(plan_node=plan_node.get_parent_node(), only_name=True)
+
+            return '(SELECT {dim}, {mes} FROM CUBE_{table} WHERE ColLevel={col})'.format(
+                dim = ','.join(parent_dim),
+                mes = ','.join(parent_mes),
+                table = self.table_name.replace('.', '_'),
+                col = plan_node.get_parent_node().get_col_level()
+            )
 
     def get_schema(self):
         """
@@ -159,8 +169,8 @@ class CubeUtils:
             ) PARTITION BY HASH(ColLevel)
         """.format(
             table_name=self.table_name.replace('.', '_'),
-            measure_col = ','.join(measure_schema),
-            dimension_col = ','.join(dimension_schema),
-            dimension_name = ','.join(self._dimension_col.keys())
+            measure_col=','.join(measure_schema),
+            dimension_col=','.join(dimension_schema),
+            dimension_name=','.join(self._dimension_col.keys())
         )
         return table_create_schema

@@ -9,6 +9,9 @@ class PlanNode:
         self.dim_list = dim_list
         self.parent_node = parent_node
 
+    def get_col_level(self):
+        return hash('_'.join(str(dim_id) for dim_id in self.dim_list))
+
     def get_dim(self):
         return self.dim_list
 

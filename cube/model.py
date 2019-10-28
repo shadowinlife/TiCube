@@ -28,12 +28,13 @@ class Cube(CreateUpdateMixin, db.Model):
     name = db.Column(db.String(100), nullable=False, comment="cube name")
     status = db.Column(db.Enum(CubeStatus), nullable=False)
     table = db.Column(db.String(255), nullable=False)
-    sql = db.Column(db.Text, nullable=True)
     desc = db.Column(db.String(255), nullable=True)
+    sqlStr = db.Column(db.Text, nullable=True)
     createdAt = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False)
     updatedAt = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=False)
     measure = db.relationship('Measure', backref='cube', lazy=True)
     dimension = db.relationship('Dimension', backref='cube', lazy=True)
+    plan = db.relationship('CubePlan', backref='cube', lazy=True)
 
 
 class Measure(CreateUpdateMixin, db.Model):
@@ -58,5 +59,15 @@ class Dimension(CreateUpdateMixin, db.Model):
     groupId = db.Column(db.String(255), nullable=True, comment="comment columns own same group id")
     parentId = db.Column(db.Integer, nullable=True, comment="subset point to parent set")
     desc = db.Column(db.String(255), nullable=True)
+    createdAt = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=True)
+    updatedAt = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=True)
+
+
+class CubePlan(CreateUpdateMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    cubeId = db.Column(db.Integer, db.ForeignKey('cube.id'), nullable=False)
+    sqlStr = db.Column(db.Text, nullable=False, comment="plan formated in the json")
+    extendPlan = db.Column(db.JSON, nullable=True, comment="plan formated in the json")
+    parentPlanId = db.Column(db.Integer,  nullable=True)
     createdAt = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=True)
     updatedAt = db.Column(db.DateTime, default=datetime.datetime.utcnow, nullable=True)

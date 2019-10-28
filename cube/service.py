@@ -247,5 +247,5 @@ def save_dimension_struct(cube_id, dimension_struct):
 
 def build_cube(cube_id):
     cube_execute = CubeExecute(cube_id)
-    cube_execute.create_cube_schema()
-    return None
+    cube_execute.init_cube_table()
+    cube_execute.init_cube_build_plan()
